@@ -1,6 +1,6 @@
 ![alt text](http://cdn0.agoda.net/images/MVC/default/logo-agoda-mobile@2X.png "agoda")
 
-Java Programming
+Programming Exercise
 ===================
 Congratulations, you have passed the first phase of our interview. 
 
