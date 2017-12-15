@@ -88,6 +88,7 @@ namespace AddressCacheProject
                 try
                 {
                     _cache.Remove(key);
+                    _cacheHistory.Remove(key);
                 }
                 finally
                 {
@@ -112,12 +113,11 @@ namespace AddressCacheProject
             _cacheLock.EnterReadLock();
             try
             {
-                if (_cacheHistory.History.Count == 0)
+                var resentUri = _cacheHistory.Recent();
+                if (resentUri == null)
                 {
                     return null;
                 }
-
-                var resentUri = _cacheHistory.History.First();
                 return _cache[resentUri] as Uri;
             }
             finally
@@ -162,7 +162,7 @@ namespace AddressCacheProject
             _cacheLock.EnterReadLock();
             try
             {
-                return _cacheHistory.History.Count;
+                return _cacheHistory.Count();
             }
             finally
             {

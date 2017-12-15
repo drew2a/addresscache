@@ -76,5 +76,20 @@ namespace AddressCacheTest
 
             Assert.Null(addressCache.Peek());
         }
+        
+        [Test]
+        public void TestRemove()
+        {
+            var addressCache = new AddressCache(new TimeSpan(0, 0, 2));
+            Assert.True(addressCache.Add(new Uri("http://a.a")));
+            Assert.True(addressCache.Add(new Uri("http://b.b")));
+            Assert.AreEqual("http://b.b/", addressCache.Peek().AbsoluteUri);
+
+            Assert.True(addressCache.Remove(new Uri("http://b.b")));
+            Assert.AreEqual("http://a.a/", addressCache.Peek().AbsoluteUri);
+            
+            Assert.True(addressCache.Remove(new Uri("http://a.a")));
+            Assert.Null(addressCache.Peek());
+        }
     }
 }

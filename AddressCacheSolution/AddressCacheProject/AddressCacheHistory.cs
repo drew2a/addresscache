@@ -4,17 +4,32 @@ namespace AddressCacheProject
 {
     public class AddressCacheHistory
     {
-        public LinkedList<string> History { get; } = new LinkedList<string>();
+        private readonly LinkedList<string> _history = new LinkedList<string>();
 
         public void Add(string key, long cacheCount)
         {
-            History.AddFirst(key);
+            _history.AddFirst(key);
 
-            var historyCount = History.Count;
+            var historyCount = _history.Count;
             for (var i = cacheCount; i < historyCount; i++)
             {
-                History.RemoveLast();
+                _history.RemoveLast();
             }
+        }
+
+        public string Recent()
+        {
+            return _history.First?.Value;
+        }
+
+        public long Count()
+        {
+            return _history.Count;
+        }
+
+        public void Remove(string key)
+        {
+            _history.Remove(key);
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Threading;
 using AddressCacheProject;
 using NUnit.Framework;
@@ -28,12 +27,22 @@ namespace AddressCacheTest.AdressCacheHistoryTest
             Assert.AreEqual(1, addressCache.Count());
             Assert.AreEqual(1, addressCache.HistoryCount());
 
-            Assert.AreEqual("http://c.c/", addressCache._cacheHistory.History.First());
+            Assert.AreEqual("http://c.c/", addressCache._cacheHistory.Recent());
         }
 
         [Test]
         public void TestRemove()
         {
+            var addressCache = new AddressCache(new TimeSpan(0, 0, 2));
+            Assert.True(addressCache.Add(new Uri("http://a.a")));
+            Assert.True(addressCache.Add(new Uri("http://b.b")));
+            Assert.AreEqual("http://b.b/", addressCache._cacheHistory.Recent());
+
+            Assert.True(addressCache.Remove(new Uri("http://b.b")));
+            Assert.AreEqual("http://a.a/", addressCache._cacheHistory.Recent());
+            
+            Assert.True(addressCache.Remove(new Uri("http://a.a")));
+            Assert.Null( addressCache._cacheHistory.Recent());
         }
     }
 }
