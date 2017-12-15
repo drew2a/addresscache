@@ -34,6 +34,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AddressCache.cs" />
+    <Compile Include="AddressCacheHistory.cs" />
+    <Compile Include="TryPeekException.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
