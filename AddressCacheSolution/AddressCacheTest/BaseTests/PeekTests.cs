@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Linq;
 using System.Threading;
 using AddressCacheProject;
 using NUnit.Framework;
@@ -11,7 +9,7 @@ namespace AddressCacheTest
     public class PeekTests
     {
         [Test]
-        public void TestAdd()
+        public void TestPeek()
         {
             var addressCache = new AddressCache(new TimeSpan(0, 0, 10));
             Assert.Null(addressCache.Peek());
@@ -24,7 +22,7 @@ namespace AddressCacheTest
         }
 
         [Test]
-        public void TestExpiredAdd()
+        public void TestExpiredPeek()
         {
             var addressCache = new AddressCache(new TimeSpan(0, 0, 2));
             Assert.True(addressCache.Add(new Uri("http://some.url")));
@@ -39,6 +37,32 @@ namespace AddressCacheTest
             Thread.Sleep(1000);
             Assert.AreEqual("http://agoda.com/", addressCache.Peek().AbsoluteUri);
             Thread.Sleep(1000);
+            Assert.Null(addressCache.Peek());
+        }
+
+        [Test]
+        public void TestStressPeak()
+        {
+            var addressCache = new AddressCache(new TimeSpan(0, 0, 2), 0);
+            Assert.True(addressCache.Add(new Uri("http://a.a")));
+            Assert.True(addressCache.Add(new Uri("http://b.b")));
+            Assert.True(addressCache.Add(new Uri("http://c.c")));
+            Assert.True(addressCache.Add(new Uri("http://d.d")));
+            Assert.True(addressCache.Add(new Uri("http://e.e")));
+            Assert.AreEqual(5, addressCache.Count());
+
+            Assert.AreEqual("http://e.e/", addressCache.Peek().AbsoluteUri);
+            Thread.Sleep(1000);
+
+            Assert.True(addressCache.Add(new Uri("http://f.f")));
+            Assert.AreEqual(6, addressCache.Count());
+            Assert.AreEqual("http://f.f/", addressCache.Peek().AbsoluteUri);
+            
+            Thread.Sleep(1000);
+            Assert.AreEqual(1, addressCache.Count());
+            Assert.AreEqual("http://f.f/", addressCache.Peek().AbsoluteUri);
+            Thread.Sleep(1000);
+            Assert.AreEqual(0, addressCache.Count());
             Assert.Null(addressCache.Peek());
         }
     }

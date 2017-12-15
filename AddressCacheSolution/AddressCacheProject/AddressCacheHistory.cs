@@ -7,25 +7,25 @@ namespace AddressCacheProject
     public class AddressCacheHistory
     {
         private readonly MemoryCache _memoryCache;
-        private readonly int _startRecalculateDifference;
+        private readonly int _startCleanDifference;
 
         public ConcurrentStack<string> History { get; set; } = new ConcurrentStack<string>();
 
-        public AddressCacheHistory(MemoryCache memoryCache, int startRecalculateDifference)
+        public AddressCacheHistory(MemoryCache memoryCache, int startCleanDifference)
         {
             _memoryCache = memoryCache;
-            _startRecalculateDifference = startRecalculateDifference;
+            _startCleanDifference = startCleanDifference > 0 ? startCleanDifference : 0;
         }
 
         public void Add(string key, long casheCount)
         {
             History.Push(key);
-            Recalculate(casheCount);
+            Clean(casheCount);
         }
 
-        private void Recalculate(long cacheCount)
+        private void Clean(long cacheCount)
         {
-            var needRecalculate =   History.Count >= cacheCount + _startRecalculateDifference;
+            var needRecalculate = History.Count >= cacheCount + _startCleanDifference;
             if (!needRecalculate)
             {
                 return;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Runtime.Caching;
 using System.Threading;
 
@@ -17,11 +18,11 @@ namespace AddressCacheProject
         public AddressCacheHistory _cacheHistory;
         private readonly ReaderWriterLockSlim _cacheLock = new ReaderWriterLockSlim();
 
-        public AddressCache(TimeSpan maxAge, int historyStartRecalculateDifference = 100)
+        public AddressCache(TimeSpan maxAge, int historyStartCleanDifference = 100)
         {
             _maxAge = maxAge;
             _cache = new MemoryCache("AddressCache");
-            _cacheHistory = new AddressCacheHistory(_cache, historyStartRecalculateDifference);
+            _cacheHistory = new AddressCacheHistory(_cache, historyStartCleanDifference);
         }
 
         /// <summary>
@@ -50,7 +51,7 @@ namespace AddressCacheProject
                 try
                 {
                     _cache.Add(key, address, DateTime.Now.Add(_maxAge));
-                    _cacheHistory.Add(key, _cache.GetCount());
+                    _cacheHistory.Add(key, _cache.Count());
                 }
                 finally
                 {
@@ -151,7 +152,7 @@ namespace AddressCacheProject
             _cacheLock.EnterReadLock();
             try
             {
-                return _cache.GetCount();
+                return _cache.Count();
             }
             finally
             {
