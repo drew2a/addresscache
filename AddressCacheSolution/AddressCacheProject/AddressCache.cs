@@ -33,29 +33,29 @@ namespace AddressCacheProject
             {
                 return false;
             }
+
             var key = address.AbsoluteUri;
 
-            _cacheLock.EnterReadLock();
+            _cacheLock.EnterUpgradeableReadLock();
             try
             {
                 if (_cache[key] != null)
                 {
                     return false;
                 }
+                _cacheLock.EnterWriteLock();
+                try
+                {
+                    _cache.Add(key, address, DateTime.Now.Add(_maxAge));
+                }
+                finally
+                {
+                    _cacheLock.ExitWriteLock();
+                }
             }
             finally
             {
-                _cacheLock.ExitReadLock();
-            }
-
-            _cacheLock.EnterWriteLock();
-            try
-            {
-                _cache.Add(key, address, DateTime.Now.Add(_maxAge));
-            }
-            finally
-            {
-                _cacheLock.ExitWriteLock();
+                _cacheLock.ExitUpgradeableReadLock();
             }
 
             return true;
@@ -71,6 +71,29 @@ namespace AddressCacheProject
             if (address == null)
             {
                 return false;
+            }
+            var key = address.AbsoluteUri;
+
+            _cacheLock.EnterUpgradeableReadLock();
+            try
+            {
+                if (_cache[key] == null)
+                {
+                    return false;
+                }
+                _cacheLock.EnterWriteLock();
+                try
+                {
+                    _cache.Remove(key);
+                }
+                finally
+                {
+                    _cacheLock.ExitWriteLock();
+                }
+            }
+            finally
+            {
+                _cacheLock.ExitUpgradeableReadLock();
             }
 
             return true;
@@ -94,6 +117,19 @@ namespace AddressCacheProject
         public Uri Take()
         {
             return null;
+        }
+        
+        public long Count()
+        {
+            _cacheLock.EnterReadLock();
+            try
+            {
+                return _cache.GetCount();
+            }
+            finally
+            {
+                _cacheLock.ExitReadLock();
+            }
         }
     }
 }
