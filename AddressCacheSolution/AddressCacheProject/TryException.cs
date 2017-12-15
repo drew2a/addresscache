@@ -2,7 +2,7 @@
 
 namespace AddressCacheProject
 {
-    public class TryPeekException: Exception
+    public class TryException: Exception
     {
         
     }

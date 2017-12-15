@@ -14,15 +14,13 @@ namespace AddressCacheProject
     public class AddressCache
     {
         private readonly TimeSpan _maxAge;
-        private readonly MemoryCache _cache;
-        public AddressCacheHistory _cacheHistory;
+        private readonly MemoryCache _cache = new MemoryCache("AddressCache");
+        public AddressCacheHistory _cacheHistory = new AddressCacheHistory();
         private readonly ReaderWriterLockSlim _cacheLock = new ReaderWriterLockSlim();
 
-        public AddressCache(TimeSpan maxAge, int historyStartCleanDifference = 100)
+        public AddressCache(TimeSpan maxAge)
         {
             _maxAge = maxAge;
-            _cache = new MemoryCache("AddressCache");
-            _cacheHistory = new AddressCacheHistory(_cache, historyStartCleanDifference);
         }
 
         /// <summary>
@@ -119,13 +117,8 @@ namespace AddressCacheProject
                     return null;
                 }
 
-                string resentUrl;
-                if (_cacheHistory.History.TryPeek(out resentUrl))
-                {
-                    return _cache[resentUrl] as Uri;
-                }
-
-                throw new TryPeekException();
+                var resentUri = _cacheHistory.History.First();
+                return _cache[resentUri] as Uri;
             }
             finally
             {
@@ -153,6 +146,23 @@ namespace AddressCacheProject
             try
             {
                 return _cache.Count();
+            }
+            finally
+            {
+                _cacheLock.ExitReadLock();
+            }
+        }
+
+        /// <summary>
+        /// HistoryCount() method retrieves count of history elements
+        /// </summary>
+        /// <returns></returns>
+        public long HistoryCount()
+        {
+            _cacheLock.EnterReadLock();
+            try
+            {
+                return _cacheHistory.History.Count;
             }
             finally
             {

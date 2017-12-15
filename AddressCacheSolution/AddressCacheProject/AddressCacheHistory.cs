@@ -1,45 +1,20 @@
-﻿using System.Collections.Concurrent;
-using System.Linq;
-using System.Runtime.Caching;
+﻿using System.Collections.Generic;
 
 namespace AddressCacheProject
 {
     public class AddressCacheHistory
     {
-        private readonly MemoryCache _memoryCache;
-        private readonly int _startCleanDifference;
+        public LinkedList<string> History { get; } = new LinkedList<string>();
 
-        public ConcurrentStack<string> History { get; set; } = new ConcurrentStack<string>();
-
-        public AddressCacheHistory(MemoryCache memoryCache, int startCleanDifference)
+        public void Add(string key, long cacheCount)
         {
-            _memoryCache = memoryCache;
-            _startCleanDifference = startCleanDifference > 0 ? startCleanDifference : 0;
-        }
+            History.AddFirst(key);
 
-        public void Add(string key, long casheCount)
-        {
-            History.Push(key);
-            Clean(casheCount);
-        }
-
-        private void Clean(long cacheCount)
-        {
-            var needRecalculate = History.Count >= cacheCount + _startCleanDifference;
-            if (!needRecalculate)
+            var historyCount = History.Count;
+            for (var i = cacheCount; i < historyCount; i++)
             {
-                return;
+                History.RemoveLast();
             }
-            var updatedHistory = new ConcurrentStack<string>();
-            foreach (var item in History.Reverse())
-            {
-                if (_memoryCache[item] != null)
-                {
-                    updatedHistory.Push(item);
-                }
-            }
-
-            History = updatedHistory;
         }
     }
 }
