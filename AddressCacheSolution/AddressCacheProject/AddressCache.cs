@@ -1,5 +1,6 @@
 ﻿using System;
-using System.Security.Policy;
+using System.Runtime.Caching;
+using System.Threading;
 
 namespace AddressCacheProject
 { /*
@@ -11,6 +12,9 @@ namespace AddressCacheProject
     public class AddressCache
     {
         private readonly TimeSpan _maxAge;
+        private readonly MemoryCache _cache = new MemoryCache("AddressCache");
+        private readonly ReaderWriterLockSlim _cacheLock = new ReaderWriterLockSlim();
+
 
         public AddressCache(TimeSpan maxAge)
         {
@@ -23,9 +27,37 @@ namespace AddressCacheProject
          * @param address
          * @return
          */
-
-        public bool Add(Url address)
+        public bool Add(Uri address)
         {
+            if (address == null)
+            {
+                return false;
+            }
+            var key = address.AbsoluteUri;
+
+            _cacheLock.EnterReadLock();
+            try
+            {
+                if (_cache[key] != null)
+                {
+                    return false;
+                }
+            }
+            finally
+            {
+                _cacheLock.ExitReadLock();
+            }
+
+            _cacheLock.EnterWriteLock();
+            try
+            {
+                _cache.Add(key, address, DateTime.Now.Add(_maxAge));
+            }
+            finally
+            {
+                _cacheLock.ExitWriteLock();
+            }
+
             return true;
         }
 
@@ -34,9 +66,14 @@ namespace AddressCacheProject
          * @param address
          * @return
          */
-        public bool Remove(Url address)
+        public bool Remove(Uri address)
         {
-            return false;
+            if (address == null)
+            {
+                return false;
+            }
+
+            return true;
         }
 
         /**
@@ -44,7 +81,7 @@ namespace AddressCacheProject
          * null if no element exists.
          * @return
          */
-        public Url Peek()
+        public Uri Peek()
         {
             return null;
         }
@@ -54,7 +91,7 @@ namespace AddressCacheProject
          * from the cache and waits if necessary until an element becomes available.
          * @return
          */
-        public Url Take()
+        public Uri Take()
         {
             return null;
         }
