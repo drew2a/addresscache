@@ -3,7 +3,7 @@ using System.Threading;
 using AddressCacheProject;
 using NUnit.Framework;
 
-namespace AddressCacheTest
+namespace AddressCacheTest.BaseTests
 {
     public class RemoveTests
     {

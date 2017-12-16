@@ -63,6 +63,9 @@ namespace AddressCacheTest.MultiThreadTests
                         _addressCache.Take();
 //                        Console.WriteLine("Take(): {0}", _addressCache.Take());
                         break;
+                    default:
+                        Console.WriteLine("In default");
+                        break;
                 }
 
                 Thread.Sleep(_actionDelayInMs);

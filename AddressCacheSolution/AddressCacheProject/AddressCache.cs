@@ -15,7 +15,7 @@ namespace AddressCacheProject
     {
         private readonly TimeSpan _maxAge;
         private readonly MemoryCache _cache = new MemoryCache("AddressCache");
-        public AddressCacheHistory _cacheHistory = new AddressCacheHistory();
+        private readonly AddressCacheHistory _cacheHistory = new AddressCacheHistory();
         private readonly ReaderWriterLockSlim _cacheLock = new ReaderWriterLockSlim();
 
         public AddressCache(TimeSpan maxAge)
@@ -142,14 +142,14 @@ namespace AddressCacheProject
                     return null;
                 }
                 var recentUri = _cache[key] as Uri;
-                if (recentUri==null)
+                if (recentUri == null)
                 {
                     return null;
                 }
-                
+
                 _cache.Remove(key);
                 _cacheHistory.Remove(key);
-                
+
                 return recentUri;
             }
             finally
