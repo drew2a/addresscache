@@ -31,5 +31,12 @@ namespace AddressCacheProject
         {
             _history.Remove(key);
         }
+
+        public string TakeRecent()
+        {
+            var firstValue = Recent();
+            _history.RemoveFirst();
+            return firstValue; 
+        }
     }
 }

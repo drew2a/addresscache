@@ -17,7 +17,7 @@ namespace AddressCacheTest
             Assert.True(addressCache.Remove(new Uri("http://some.url")));
             Assert.AreEqual(0, addressCache.Count());
         }
-        
+
         [Test]
         public void TestExpiredRemove()
         {

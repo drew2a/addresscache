@@ -47,6 +47,7 @@
     <Compile Include="BaseTests\AddTests.cs" />
     <Compile Include="BaseTests\PeekTests.cs" />
     <Compile Include="BaseTests\RemoveTest.cs" />
+    <Compile Include="BaseTests\TakeTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -113,12 +113,12 @@ namespace AddressCacheProject
             _cacheLock.EnterReadLock();
             try
             {
-                var resentUri = _cacheHistory.Recent();
-                if (resentUri == null)
+                var key = _cacheHistory.Recent();
+                if (key == null)
                 {
                     return null;
                 }
-                return _cache[resentUri] as Uri;
+                return _cache[key] as Uri;
             }
             finally
             {
@@ -133,7 +133,29 @@ namespace AddressCacheProject
         /// <returns></returns>
         public Uri Take()
         {
-            return null;
+            _cacheLock.EnterWriteLock();
+            try
+            {
+                var key = _cacheHistory.Recent();
+                if (key == null)
+                {
+                    return null;
+                }
+                var recentUri = _cache[key] as Uri;
+                if (recentUri==null)
+                {
+                    return null;
+                }
+                
+                _cache.Remove(key);
+                _cacheHistory.Remove(key);
+                
+                return recentUri;
+            }
+            finally
+            {
+                _cacheLock.ExitWriteLock();
+            }
         }
 
         /// <summary>
