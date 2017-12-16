@@ -12,15 +12,18 @@ namespace AddressCacheTest.MultiThreadTests
         private readonly int _actionDelayInMs;
         private readonly int _taskStartDelay;
 
-        private AddressCache _addressCache = new AddressCache(new TimeSpan(0, 0, 1));
+        private readonly AddressCache _addressCache;
 
 
-        public Monkeys(int count = 100, int actionCount = 100, int actionDelayInMs = 100, int taskStartDelay = 100)
+        public Monkeys(TimeSpan maxCacheAge, int count = 100, int actionCount = 100, int actionDelayInMs = 100,
+            int taskStartDelay = 100)
         {
             _count = count;
             _actionCount = actionCount;
             _actionDelayInMs = actionDelayInMs;
             _taskStartDelay = taskStartDelay;
+
+            _addressCache = new AddressCache(maxCacheAge);
         }
 
         public void ReleaseTheMonkeys()
@@ -45,16 +48,20 @@ namespace AddressCacheTest.MultiThreadTests
                 switch (random.Next(1, 5))
                 {
                     case 1:
-                        Console.WriteLine("Add({0}): {1}", uri, _addressCache.Add(uri));
+                        _addressCache.Add(uri);
+//                        Console.WriteLine("Add({0}): {1}", uri, _addressCache.Add(uri));
                         break;
                     case 2:
-                        Console.WriteLine("Remove({0}): {1}", uri, _addressCache.Remove(uri));
+                        _addressCache.Remove(uri);
+//                        Console.WriteLine("Remove({0}): {1}", uri, _addressCache.Remove(uri));
                         break;
                     case 3:
-                        Console.WriteLine("Peek(): {0}", _addressCache.Peek());
+                        _addressCache.Peek();
+//                        Console.WriteLine("Peek(): {0}", _addressCache.Peek());
                         break;
                     case 4:
-                        Console.WriteLine("Take(): {0}", _addressCache.Take());
+                        _addressCache.Take();
+//                        Console.WriteLine("Take(): {0}", _addressCache.Take());
                         break;
                 }
 
