@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Threading;
 using AddressCacheProject;
 using NUnit.Framework;
@@ -13,19 +14,17 @@ namespace AddressCacheTest.BaseTests
         {
             var addressCache = new AddressCache(new TimeSpan(0, 0, 2));
 
-            Assert.True(addressCache.Add(new Uri("http://some.url")));
-            Assert.AreEqual("http://some.url/", addressCache.Take().AbsoluteUri);
+            Assert.True(addressCache.Add(IPAddress.Parse("1.1.1.1")));
+            Assert.AreEqual("1.1.1.1", addressCache.Take().ToString());
 
-            Assert.AreEqual(0, addressCache.Count());
+            Assert.True(addressCache.Add(IPAddress.Parse("1.1.1.1")));
+            Assert.True(addressCache.Add(IPAddress.Parse("2.2.2.2")));
+            Assert.True(addressCache.Add(IPAddress.Parse("3.3.3.3")));
 
-            Assert.True(addressCache.Add(new Uri("http://a.a")));
-            Assert.True(addressCache.Add(new Uri("http://b.b")));
-            Assert.True(addressCache.Add(new Uri("http://c.c")));
-
-            Assert.AreEqual("http://c.c/", addressCache.Take().AbsoluteUri);
-            Assert.AreEqual("http://b.b/", addressCache.Take().AbsoluteUri);
-            Assert.AreEqual("http://a.a/", addressCache.Take().AbsoluteUri);
-            Assert.AreEqual(0, addressCache.Count());
+            Assert.AreEqual("3.3.3.3", addressCache.Take().ToString());
+            Assert.AreEqual("2.2.2.2", addressCache.Take().ToString());
+            Assert.AreEqual("1.1.1.1", addressCache.Take().ToString());
+            Assert.Null(addressCache.Peek());
         }
 
         [Test]
@@ -33,46 +32,47 @@ namespace AddressCacheTest.BaseTests
         {
             var addressCache = new AddressCache(new TimeSpan(0, 0, 2));
 
-            Assert.True(addressCache.Add(new Uri("http://a.a")));
-            Assert.True(addressCache.Add(new Uri("http://b.b")));
-            Assert.True(addressCache.Add(new Uri("http://c.c")));
-            Assert.True(addressCache.Add(new Uri("http://d.d")));
+            Assert.True(addressCache.Add(IPAddress.Parse("1.1.1.1")));
+            Assert.True(addressCache.Add(IPAddress.Parse("2.2.2.2")));
+            Assert.True(addressCache.Add(IPAddress.Parse("3.3.3.3")));
+            Assert.True(addressCache.Add(IPAddress.Parse("4.4.4.4")));
 
-            Assert.True(addressCache.Remove(new Uri("http://d.d")));
-            Assert.True(addressCache.Remove(new Uri("http://b.b")));
+            Assert.True(addressCache.Remove(IPAddress.Parse("4.4.4.4")));
+            Assert.True(addressCache.Remove(IPAddress.Parse("2.2.2.2")));
 
-            Assert.AreEqual("http://c.c/", addressCache.Take().AbsoluteUri);
-            Assert.AreEqual("http://a.a/", addressCache.Take().AbsoluteUri);
+            Assert.AreEqual("3.3.3.3", addressCache.Take().ToString());
+            Assert.AreEqual("1.1.1.1", addressCache.Take().ToString());
         }
 
         [Test]
         public void TestExpired()
         {
             var addressCache = new AddressCache(new TimeSpan(0, 0, 2));
-            Assert.True(addressCache.Add(new Uri("http://a.a")));
-            Assert.True(addressCache.Add(new Uri("http://b.b")));
+            Assert.True(addressCache.Add(IPAddress.Parse("1.1.1.1")));
+            Assert.True(addressCache.Add(IPAddress.Parse("2.2.2.2")));
             Thread.Sleep(1000);
-            Assert.True(addressCache.Add(new Uri("http://c.c")));
-            Assert.True(addressCache.Add(new Uri("http://d.d")));
+            Assert.True(addressCache.Add(IPAddress.Parse("3.3.3.3")));
+            Assert.True(addressCache.Add(IPAddress.Parse("4.4.4.4")));
             Thread.Sleep(1000);
             
-            Assert.AreEqual("http://d.d/", addressCache.Take().AbsoluteUri);
-            Assert.AreEqual("http://c.c/", addressCache.Take().AbsoluteUri);
+            Assert.AreEqual("4.4.4.4", addressCache.Take().ToString());
+            Assert.AreEqual("3.3.3.3", addressCache.Take().ToString());
+            Assert.Null(addressCache.Peek());
         }
 
         [Test]
         public void TestRemoveExpired()
         {
             var addressCache = new AddressCache(new TimeSpan(0, 0, 2));
-            Assert.True(addressCache.Add(new Uri("http://a.a")));
-            Assert.True(addressCache.Add(new Uri("http://b.b")));
+            Assert.True(addressCache.Add(IPAddress.Parse("1.1.1.1")));
+            Assert.True(addressCache.Add(IPAddress.Parse("2.2.2.2")));
             Thread.Sleep(1000);
-            Assert.True(addressCache.Add(new Uri("http://c.c")));
-            Assert.True(addressCache.Add(new Uri("http://d.d")));
+            Assert.True(addressCache.Add(IPAddress.Parse("3.3.3.3")));
+            Assert.True(addressCache.Add(IPAddress.Parse("4.4.4.4")));
             Thread.Sleep(1000);
-            Assert.True(addressCache.Remove(new Uri("http://d.d")));
+            Assert.True(addressCache.Remove(IPAddress.Parse("4.4.4.4")));
 
-            Assert.AreEqual("http://c.c/", addressCache.Take().AbsoluteUri);
+            Assert.AreEqual("3.3.3.3", addressCache.Take().ToString());
         }
     }
 }

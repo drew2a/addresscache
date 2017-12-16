@@ -30,5 +30,13 @@ namespace AddressCacheTest.MultiThreadTests
             monkeys.ReleaseTheMonkeys();
             Assert.Pass();
         }
+
+        [Test]
+        public void IndustriousMonkeys()
+        {
+            var monkeys = new Monkeys(new TimeSpan(0, 0, 3), 100, 10000, 0, 1);
+            monkeys.ReleaseTheMonkeys();
+            Assert.Pass();
+        }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using AddressCacheProject;
@@ -43,21 +44,18 @@ namespace AddressCacheTest.MultiThreadTests
             var random = new Random();
             for (var i = 0; i < _actionCount; i++)
             {
-                var uri = GenerateUri(random);
+                var address = GenerateAddress(random);
 
                 switch (random.Next(1, 4))
                 {
                     case 1:
-                        _addressCache.Add(uri);
-//                        Console.WriteLine("Add({0}): {1}", uri, _addressCache.Add(uri));
+                        _addressCache.Add(address);
                         break;
                     case 2:
-                        _addressCache.Remove(uri);
-//                        Console.WriteLine("Remove({0}): {1}", uri, _addressCache.Remove(uri));
+                        _addressCache.Remove(address);
                         break;
                     case 3:
                         _addressCache.Peek();
-//                        Console.WriteLine("Peek(): {0}", _addressCache.Peek());
                         break;
                     default:
                         Console.WriteLine("In default");
@@ -68,12 +66,13 @@ namespace AddressCacheTest.MultiThreadTests
             }
         }
 
-        public Uri GenerateUri(Random random)
+        public IPAddress GenerateAddress(Random random)
         {
-            const string alpabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            return new Uri(String.Format("http://{0}.{1}",
-                alpabet[random.Next(0, alpabet.Length)],
-                alpabet[random.Next(0, alpabet.Length)]));
+            return IPAddress.Parse(String.Format("{0}.{1}.{2}.{3}",
+                random.Next(0, 256),
+                random.Next(0, 256),
+                random.Next(0, 256),
+                random.Next(0, 256)));
         }
     }
 }

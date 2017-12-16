@@ -34,7 +34,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AddressCache.cs" />
-    <Compile Include="AddressCacheHistory.cs" />
     <Compile Include="CacheEntry.cs" />
   </ItemGroup>
   <ItemGroup>

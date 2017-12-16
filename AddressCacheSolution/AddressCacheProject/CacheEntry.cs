@@ -1,19 +1,20 @@
 ﻿using System;
+using System.Net;
 
 namespace AddressCacheProject
 {
     public class CacheEntry
     {
-        public Uri Data { get; }
+        public IPAddress Address { get; }
 
         private readonly DateTime _expirationTime;
         public CacheEntry Next { get; set; }
         public CacheEntry Previous { get; set; }
 
-
-        public CacheEntry(Uri uri, DateTime expirationTime, CacheEntry previous= null, CacheEntry next = null)
+        public CacheEntry(IPAddress address, DateTime expirationTime, CacheEntry previous = null,
+            CacheEntry next = null)
         {
-            Data = uri;
+            Address = address;
             Next = next;
             Previous = previous;
 

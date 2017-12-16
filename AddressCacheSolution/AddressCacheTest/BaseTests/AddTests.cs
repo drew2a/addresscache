@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Threading;
 using AddressCacheProject;
 using NUnit.Framework;
@@ -12,25 +13,23 @@ namespace AddressCacheTest.BaseTests
         public void TestAdd()
         {
             var addressCache = new AddressCache(new TimeSpan(0, 0, 10));
-            Assert.True(addressCache.Add(new Uri("http://some.url")));
-            Assert.False(addressCache.Add(new Uri("http://some.url")));
+            Assert.True(addressCache.Add(IPAddress.Parse("1.1.1.1")));
+            Assert.False(addressCache.Add(IPAddress.Parse("1.1.1.1")));
             Assert.False(addressCache.Add(null));
-            Assert.AreEqual(1, addressCache.Count());
         }
 
         [Test]
         public void TestExpiredAdd()
         {
             var addressCache = new AddressCache(new TimeSpan(0, 0, 2));
-            Assert.True(addressCache.Add(new Uri("http://some.url")));
-            Assert.True(addressCache.Add(new Uri("http://agoda.com")));
-            Assert.False(addressCache.Add(new Uri("http://some.url")));
-            Assert.False(addressCache.Add(new Uri("http://agoda.com")));
-            Assert.AreEqual(2, addressCache.Count());
+            Assert.True(addressCache.Add(IPAddress.Parse("1.1.1.1")));
+            Assert.True(addressCache.Add(IPAddress.Parse("2.2.2.2")));
+            Assert.False(addressCache.Add(IPAddress.Parse("1.1.1.1")));
+            Assert.False(addressCache.Add(IPAddress.Parse("2.2.2.2")));
 
             Thread.Sleep(2000);
-            Assert.True(addressCache.Add(new Uri("http://some.url")));
-            Assert.True(addressCache.Add(new Uri("http://agoda.com")));
+            Assert.True(addressCache.Add(IPAddress.Parse("1.1.1.1")));
+            Assert.True(addressCache.Add(IPAddress.Parse("2.2.2.2")));
         }
     }
 }

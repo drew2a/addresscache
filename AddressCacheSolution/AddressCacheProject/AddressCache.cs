@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading;
 
 namespace AddressCacheProject
@@ -16,9 +17,8 @@ namespace AddressCacheProject
         private readonly TimeSpan _maxAge;
 
         private readonly Dictionary<string, CacheEntry> _cache = new Dictionary<string, CacheEntry>();
-        private readonly object lockObject = new object();
-
-        private CacheEntry _last = null;
+        private readonly object _lockObject = new object();
+        private CacheEntry _last;
 
         public AddressCache(TimeSpan maxAge)
         {
@@ -31,16 +31,16 @@ namespace AddressCacheProject
         /// </summary>
         /// <param name="address"></param>
         /// <returns></returns>
-        public bool Add(Uri address)
+        public bool Add(IPAddress address)
         {
             if (address == null)
             {
                 return false;
             }
 
-            var key = address.AbsoluteUri;
+            var key = address.ToString();
 
-            lock (lockObject)
+            lock (_lockObject)
             {
                 CacheEntry cacheEntry;
                 var isEntryExists = _cache.TryGetValue(key, out cacheEntry);
@@ -51,7 +51,7 @@ namespace AddressCacheProject
                 }
 
                 cacheEntry = new CacheEntry(
-                    uri: address,
+                    address: address,
                     expirationTime: DateTime.Now.Add(_maxAge),
                     next: _last);
 
@@ -63,7 +63,7 @@ namespace AddressCacheProject
                 _cache[key] = cacheEntry;
                 _last = cacheEntry;
 
-                Monitor.PulseAll(lockObject);
+                Monitor.PulseAll(_lockObject);
             }
 
             return true;
@@ -74,16 +74,16 @@ namespace AddressCacheProject
         /// </summary>
         /// <param name="address"></param>
         /// <returns></returns>
-        public bool Remove(Uri address)
+        public bool Remove(IPAddress  address)
         {
             if (address == null)
             {
                 return false;
             }
 
-            var key = address.AbsoluteUri;
+            var key = address.ToString();
 
-            lock (lockObject)
+            lock (_lockObject)
             {
                 return RemoveEntry(key);
             }
@@ -94,16 +94,16 @@ namespace AddressCacheProject
         /// null if no element exists. 
         /// </summary>
         /// <returns></returns>
-        public Uri Peek()
+        public IPAddress Peek()
         {
-            lock (lockObject)
+            lock (_lockObject)
             {
                 if (_last == null || _last.IsExpired())
                 {
                     return null;
                 }
 
-                return _last.Data;
+                return _last.Address;
             }
         }
 
@@ -112,34 +112,21 @@ namespace AddressCacheProject
         /// from the cache and waits if necessary until an element becomes available.
         /// </summary>
         /// <returns></returns>
-        public Uri Take()
+        public IPAddress Take()
         {
-            lock (lockObject)
+            lock (_lockObject)
             {
                 RemoveExpired();
 
                 while (_last == null)
                 {
-                    Monitor.Wait(lockObject);
+                    Monitor.Wait(_lockObject);
                 }
 
-                var result = _last.Data;
+                var result = _last.Address;
 
-                RemoveEntry(_last.Data.AbsoluteUri);
+                RemoveEntry(_last.Address.ToString());
                 return result;
-            }
-        }
-
-        /// <summary>
-        /// Count() method retrieves count of cashed elements
-        /// </summary>
-        /// <returns></returns>
-        public long Count()
-        {
-            lock (lockObject)
-            {
-                RemoveExpired();
-                return _cache.Count;
             }
         }
 
