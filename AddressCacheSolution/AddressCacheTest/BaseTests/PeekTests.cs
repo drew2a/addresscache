@@ -10,7 +10,7 @@ namespace AddressCacheTest.BaseTests
     public class PeekTests
     {
         [Test]
-        public void TestPeek()
+        public void Peek()
         {
             var addressCache = new AddressCache(new TimeSpan(0, 0, 10));
             Assert.Null(addressCache.Peek());
@@ -23,7 +23,7 @@ namespace AddressCacheTest.BaseTests
         }
 
         [Test]
-        public void TestExpiredPeek()
+        public void ExpiredPeek()
         {
             var addressCache = new AddressCache(new TimeSpan(0, 0, 2));
             Assert.True(addressCache.Add(IPAddress.Parse("1.1.1.1")));
@@ -43,7 +43,7 @@ namespace AddressCacheTest.BaseTests
         }
 
         [Test]
-        public void TestStressPeak()
+        public void StressPeak()
         {
             var addressCache = new AddressCache(new TimeSpan(0, 0, 2));
             Assert.True(addressCache.Add(IPAddress.Parse("1.1.1.1")));
@@ -70,7 +70,7 @@ namespace AddressCacheTest.BaseTests
         }
         
         [Test]
-        public void TestRemove()
+        public void Remove()
         {
             var addressCache = new AddressCache(new TimeSpan(0, 0, 2));
             Assert.True(addressCache.Add(IPAddress.Parse("1.1.1.1")));

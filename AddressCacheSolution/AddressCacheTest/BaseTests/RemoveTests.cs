@@ -10,7 +10,7 @@ namespace AddressCacheTest.BaseTests
     public class RemoveTests
     {
         [Test]
-        public void TestRemove()
+        public void Remove()
         {
             var addressCache = new AddressCache(new TimeSpan(0, 0, 2));
             Assert.True(addressCache.Add(IPAddress.Parse("1.1.1.1")));
@@ -20,7 +20,7 @@ namespace AddressCacheTest.BaseTests
         }
 
         [Test]
-        public void TestExpiredRemove()
+        public void ExpiredRemove()
         {
             var addressCache = new AddressCache(new TimeSpan(0, 0, 2));
             Assert.True(addressCache.Add(IPAddress.Parse("1.1.1.1")));

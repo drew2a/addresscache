@@ -10,7 +10,7 @@ namespace AddressCacheTest.BaseTests
     public class TakeTests
     {
         [Test]
-        public void TestTake()
+        public void Take()
         {
             var addressCache = new AddressCache(new TimeSpan(0, 0, 2));
 
@@ -28,7 +28,7 @@ namespace AddressCacheTest.BaseTests
         }
 
         [Test]
-        public void TestRemove()
+        public void Remove()
         {
             var addressCache = new AddressCache(new TimeSpan(0, 0, 2));
 
@@ -45,7 +45,7 @@ namespace AddressCacheTest.BaseTests
         }
 
         [Test]
-        public void TestExpired()
+        public void Expired()
         {
             var addressCache = new AddressCache(new TimeSpan(0, 0, 2));
             Assert.True(addressCache.Add(IPAddress.Parse("1.1.1.1")));
@@ -64,6 +64,7 @@ namespace AddressCacheTest.BaseTests
         public void TestRemoveExpired()
         {
             var addressCache = new AddressCache(new TimeSpan(0, 0, 2));
+
             Assert.True(addressCache.Add(IPAddress.Parse("1.1.1.1")));
             Assert.True(addressCache.Add(IPAddress.Parse("2.2.2.2")));
             Thread.Sleep(1000);
@@ -71,8 +72,32 @@ namespace AddressCacheTest.BaseTests
             Assert.True(addressCache.Add(IPAddress.Parse("4.4.4.4")));
             Thread.Sleep(1000);
             Assert.True(addressCache.Remove(IPAddress.Parse("4.4.4.4")));
+        }
+        
+        [Test]
+        public void Block()
+        {
+            var addressCache = new AddressCache(new TimeSpan(0, 0, 2));
 
-            Assert.AreEqual("3.3.3.3", addressCache.Take().ToString());
+            var thread = new Thread(() =>
+            {
+                addressCache.Take();
+                Assert.Fail();
+            });
+            thread.Start();
+
+            Thread.Sleep(1000);
+            thread.Abort();
+            
+            thread = new Thread(() =>
+            {
+                Assert.AreEqual("1.1.1.1"  ,addressCache.Take().ToString());
+                Assert.Pass();
+            });
+            thread.Start();
+            Thread.Sleep(1000);
+            
+            Assert.True(addressCache.Add(IPAddress.Parse("1.1.1.1")));
         }
     }
 }
