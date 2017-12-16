@@ -46,8 +46,10 @@
     <Compile Include="AdressCacheHistoryTest\TestHistory.cs" />
     <Compile Include="BaseTests\AddTests.cs" />
     <Compile Include="BaseTests\PeekTests.cs" />
-    <Compile Include="BaseTests\RemoveTest.cs" />
+    <Compile Include="BaseTests\RemoveTests.cs" />
     <Compile Include="BaseTests\TakeTests.cs" />
+    <Compile Include="MultiThreadTests\Monkeys.cs" />
+    <Compile Include="MultiThreadTests\MonkeyTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

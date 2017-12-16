@@ -5,7 +5,7 @@ using NUnit.Framework;
 
 namespace AddressCacheTest
 {
-    public class RemoveTest
+    public class RemoveTests
     {
         [Test]
         public void TestRemove()
