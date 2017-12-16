@@ -21,18 +21,16 @@ namespace AddressCacheTest.BaseTests
         [Test]
         public void TestExpiredAdd()
         {
-            var timeSpan = new TimeSpan(0, 0, 2);
-            var addressCache = new AddressCache(timeSpan);
+            var addressCache = new AddressCache(new TimeSpan(0, 0, 2));
             Assert.True(addressCache.Add(new Uri("http://some.url")));
             Assert.True(addressCache.Add(new Uri("http://agoda.com")));
             Assert.False(addressCache.Add(new Uri("http://some.url")));
+            Assert.False(addressCache.Add(new Uri("http://agoda.com")));
             Assert.AreEqual(2, addressCache.Count());
 
-            Thread.Sleep(timeSpan);
-            Assert.AreEqual(0, addressCache.Count());
-
+            Thread.Sleep(2000);
             Assert.True(addressCache.Add(new Uri("http://some.url")));
-            Assert.AreEqual(1, addressCache.Count());
+            Assert.True(addressCache.Add(new Uri("http://agoda.com")));
         }
     }
 }

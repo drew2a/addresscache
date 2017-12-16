@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Caching;
 using System.Threading;
 
 namespace AddressCacheProject
@@ -14,9 +14,11 @@ namespace AddressCacheProject
     public class AddressCache
     {
         private readonly TimeSpan _maxAge;
-        private readonly MemoryCache _cache = new MemoryCache("AddressCache");
-        private readonly AddressCacheHistory _cacheHistory = new AddressCacheHistory();
-        private readonly ReaderWriterLockSlim _cacheLock = new ReaderWriterLockSlim();
+
+        private readonly Dictionary<string, CacheEntry> _cache = new Dictionary<string, CacheEntry>();
+        private readonly object lockObject = new object();
+
+        private CacheEntry _last = null;
 
         public AddressCache(TimeSpan maxAge)
         {
@@ -38,27 +40,30 @@ namespace AddressCacheProject
 
             var key = address.AbsoluteUri;
 
-            _cacheLock.EnterUpgradeableReadLock();
-            try
+            lock (lockObject)
             {
-                if (_cache[key] != null)
+                CacheEntry cacheEntry;
+                var isEntryExists = _cache.TryGetValue(key, out cacheEntry);
+
+                if (isEntryExists && !cacheEntry.IsExpired())
                 {
                     return false;
                 }
-                _cacheLock.EnterWriteLock();
-                try
+
+                cacheEntry = new CacheEntry(
+                    uri: address,
+                    expirationTime: DateTime.Now.Add(_maxAge),
+                    next: _last);
+
+                if (_last != null)
                 {
-                    _cache.Add(key, address, DateTime.Now.Add(_maxAge));
-                    _cacheHistory.Add(key, _cache.Count());
+                    _last.Previous = cacheEntry;
                 }
-                finally
-                {
-                    _cacheLock.ExitWriteLock();
-                }
-            }
-            finally
-            {
-                _cacheLock.ExitUpgradeableReadLock();
+
+                _cache[key] = cacheEntry;
+                _last = cacheEntry;
+
+                Monitor.PulseAll(lockObject);
             }
 
             return true;
@@ -75,32 +80,13 @@ namespace AddressCacheProject
             {
                 return false;
             }
+
             var key = address.AbsoluteUri;
 
-            _cacheLock.EnterUpgradeableReadLock();
-            try
+            lock (lockObject)
             {
-                if (_cache[key] == null)
-                {
-                    return false;
-                }
-                _cacheLock.EnterWriteLock();
-                try
-                {
-                    _cache.Remove(key);
-                    _cacheHistory.Remove(key);
-                }
-                finally
-                {
-                    _cacheLock.ExitWriteLock();
-                }
+                return RemoveEntry(key);
             }
-            finally
-            {
-                _cacheLock.ExitUpgradeableReadLock();
-            }
-
-            return true;
         }
 
         /// <summary>
@@ -110,19 +96,14 @@ namespace AddressCacheProject
         /// <returns></returns>
         public Uri Peek()
         {
-            _cacheLock.EnterReadLock();
-            try
+            lock (lockObject)
             {
-                var key = _cacheHistory.Recent();
-                if (key == null)
+                if (_last == null || _last.IsExpired())
                 {
                     return null;
                 }
-                return _cache[key] as Uri;
-            }
-            finally
-            {
-                _cacheLock.ExitReadLock();
+
+                return _last.Data;
             }
         }
 
@@ -133,28 +114,19 @@ namespace AddressCacheProject
         /// <returns></returns>
         public Uri Take()
         {
-            _cacheLock.EnterWriteLock();
-            try
+            lock (lockObject)
             {
-                var key = _cacheHistory.Recent();
-                if (key == null)
+                RemoveExpired();
+
+                while (_last == null)
                 {
-                    return null;
-                }
-                var recentUri = _cache[key] as Uri;
-                if (recentUri == null)
-                {
-                    return null;
+                    Monitor.Wait(lockObject);
                 }
 
-                _cache.Remove(key);
-                _cacheHistory.Remove(key);
+                var result = _last.Data;
 
-                return recentUri;
-            }
-            finally
-            {
-                _cacheLock.ExitWriteLock();
+                RemoveEntry(_last.Data.AbsoluteUri);
+                return result;
             }
         }
 
@@ -164,31 +136,52 @@ namespace AddressCacheProject
         /// <returns></returns>
         public long Count()
         {
-            _cacheLock.EnterReadLock();
-            try
+            lock (lockObject)
             {
-                return _cache.Count();
-            }
-            finally
-            {
-                _cacheLock.ExitReadLock();
+                RemoveExpired();
+                return _cache.Count;
             }
         }
 
-        /// <summary>
-        /// HistoryCount() method retrieves count of history elements
-        /// </summary>
-        /// <returns></returns>
-        public long HistoryCount()
+        private bool RemoveEntry(string key)
         {
-            _cacheLock.EnterReadLock();
-            try
+            CacheEntry removingEntry;
+            var isEntryExists = _cache.TryGetValue(key, out removingEntry);
+            if (!isEntryExists)
             {
-                return _cacheHistory.Count();
+                return false;
             }
-            finally
+
+            if (_last == removingEntry)
             {
-                _cacheLock.ExitReadLock();
+                _last = removingEntry.Next;
+            }
+
+            if (removingEntry.Previous != null)
+            {
+                removingEntry.Previous.Next = removingEntry.Next;
+            }
+
+            if (removingEntry.Next != null)
+            {
+                removingEntry.Next.Previous = removingEntry.Previous;
+            }
+
+            removingEntry.Next = removingEntry.Previous = null;
+
+            _cache.Remove(key);
+            return !removingEntry.IsExpired();
+        }
+
+        private void RemoveExpired()
+        {
+            var expired = _cache.Keys
+                .Where(k => _cache[k].IsExpired())
+                .ToArray();
+
+            foreach (var key in expired)
+            {
+                RemoveEntry(key);
             }
         }
     }

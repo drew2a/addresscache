@@ -12,13 +12,11 @@ namespace AddressCacheTest.BaseTests
         public void TestTake()
         {
             var addressCache = new AddressCache(new TimeSpan(0, 0, 2));
-            Assert.Null(addressCache.Take());
 
             Assert.True(addressCache.Add(new Uri("http://some.url")));
             Assert.AreEqual("http://some.url/", addressCache.Take().AbsoluteUri);
 
             Assert.AreEqual(0, addressCache.Count());
-            Assert.Null(addressCache.Take());
 
             Assert.True(addressCache.Add(new Uri("http://a.a")));
             Assert.True(addressCache.Add(new Uri("http://b.b")));
@@ -27,7 +25,6 @@ namespace AddressCacheTest.BaseTests
             Assert.AreEqual("http://c.c/", addressCache.Take().AbsoluteUri);
             Assert.AreEqual("http://b.b/", addressCache.Take().AbsoluteUri);
             Assert.AreEqual("http://a.a/", addressCache.Take().AbsoluteUri);
-            Assert.Null(addressCache.Take());
             Assert.AreEqual(0, addressCache.Count());
         }
 
@@ -46,7 +43,6 @@ namespace AddressCacheTest.BaseTests
 
             Assert.AreEqual("http://c.c/", addressCache.Take().AbsoluteUri);
             Assert.AreEqual("http://a.a/", addressCache.Take().AbsoluteUri);
-            Assert.Null(addressCache.Take());
         }
 
         [Test]
@@ -62,7 +58,6 @@ namespace AddressCacheTest.BaseTests
             
             Assert.AreEqual("http://d.d/", addressCache.Take().AbsoluteUri);
             Assert.AreEqual("http://c.c/", addressCache.Take().AbsoluteUri);
-            Assert.Null(addressCache.Take());
         }
 
         [Test]
@@ -78,7 +73,6 @@ namespace AddressCacheTest.BaseTests
             Assert.True(addressCache.Remove(new Uri("http://d.d")));
 
             Assert.AreEqual("http://c.c/", addressCache.Take().AbsoluteUri);
-            Assert.Null(addressCache.Take());
         }
     }
 }

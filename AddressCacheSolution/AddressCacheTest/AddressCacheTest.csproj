@@ -43,7 +43,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AdressCacheHistoryTest\TestHistory.cs" />
     <Compile Include="BaseTests\AddTests.cs" />
     <Compile Include="BaseTests\PeekTests.cs" />
     <Compile Include="BaseTests\RemoveTests.cs" />

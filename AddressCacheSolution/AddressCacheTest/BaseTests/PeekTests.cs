@@ -51,28 +51,20 @@ namespace AddressCacheTest.BaseTests
             Assert.True(addressCache.Add(new Uri("http://d.d")));
             Assert.True(addressCache.Add(new Uri("http://e.e")));
             Assert.AreEqual(5, addressCache.Count());
-            Assert.AreEqual(5, addressCache.HistoryCount());
 
             Assert.AreEqual("http://e.e/", addressCache.Peek().AbsoluteUri);
             Thread.Sleep(1000);
 
             Assert.True(addressCache.Add(new Uri("http://f.f")));
-            Assert.AreEqual(6, addressCache.Count());
-            Assert.AreEqual(6, addressCache.HistoryCount());
 
             Assert.AreEqual("http://f.f/", addressCache.Peek().AbsoluteUri);
             
             Thread.Sleep(1000);
-            Assert.AreEqual(1, addressCache.Count());
-            Assert.AreEqual(6, addressCache.HistoryCount());
             Assert.True(addressCache.Add(new Uri("http://e.e")));
-            Assert.AreEqual(2, addressCache.HistoryCount());
 
             Assert.AreEqual("http://e.e/", addressCache.Peek().AbsoluteUri);
             
             Thread.Sleep(2000);
-            Assert.AreEqual(0, addressCache.Count());
-            Assert.AreEqual(2, addressCache.HistoryCount());
 
             Assert.Null(addressCache.Peek());
         }

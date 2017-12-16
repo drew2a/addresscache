@@ -5,6 +5,7 @@ using NUnit.Framework;
 
 namespace AddressCacheTest.BaseTests
 {
+    [TestFixture]
     public class RemoveTests
     {
         [Test]
@@ -15,6 +16,7 @@ namespace AddressCacheTest.BaseTests
 
             Assert.False(addressCache.Remove(new Uri("http://agoda.com")));
             Assert.True(addressCache.Remove(new Uri("http://some.url")));
+            
             Assert.AreEqual(0, addressCache.Count());
         }
 

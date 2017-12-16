@@ -45,7 +45,7 @@ namespace AddressCacheTest.MultiThreadTests
             {
                 var uri = GenerateUri(random);
 
-                switch (random.Next(1, 5))
+                switch (random.Next(1, 4))
                 {
                     case 1:
                         _addressCache.Add(uri);
@@ -58,10 +58,6 @@ namespace AddressCacheTest.MultiThreadTests
                     case 3:
                         _addressCache.Peek();
 //                        Console.WriteLine("Peek(): {0}", _addressCache.Peek());
-                        break;
-                    case 4:
-                        _addressCache.Take();
-//                        Console.WriteLine("Take(): {0}", _addressCache.Take());
                         break;
                     default:
                         Console.WriteLine("In default");
