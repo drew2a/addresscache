@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Threading;
 
@@ -18,7 +17,8 @@ namespace AddressCacheProject
 
         private readonly Dictionary<string, CacheEntry> _cache = new Dictionary<string, CacheEntry>();
         private readonly object _lockObject = new object();
-        private CacheEntry _last;
+        private CacheEntry _mostRecent;
+        private CacheEntry _mostOld;
 
         public AddressCache(TimeSpan maxAge)
         {
@@ -44,7 +44,6 @@ namespace AddressCacheProject
             {
                 CacheEntry cacheEntry;
                 var isEntryExists = _cache.TryGetValue(key, out cacheEntry);
-
                 if (isEntryExists && !cacheEntry.IsExpired())
                 {
                     return false;
@@ -53,15 +52,20 @@ namespace AddressCacheProject
                 cacheEntry = new CacheEntry(
                     address: address,
                     expirationTime: DateTime.Now.Add(_maxAge),
-                    next: _last);
+                    next: _mostRecent);
 
-                if (_last != null)
+                if (_mostRecent != null)
                 {
-                    _last.Previous = cacheEntry;
+                    _mostRecent.Previous = cacheEntry;
+                }
+
+                if (_mostOld == null)
+                {
+                    _mostOld = cacheEntry;
                 }
 
                 _cache[key] = cacheEntry;
-                _last = cacheEntry;
+                _mostRecent = cacheEntry;
 
                 Monitor.PulseAll(_lockObject);
             }
@@ -74,7 +78,7 @@ namespace AddressCacheProject
         /// </summary>
         /// <param name="address"></param>
         /// <returns></returns>
-        public bool Remove(IPAddress  address)
+        public bool Remove(IPAddress address)
         {
             if (address == null)
             {
@@ -98,12 +102,12 @@ namespace AddressCacheProject
         {
             lock (_lockObject)
             {
-                if (_last == null || _last.IsExpired())
+                if (_mostRecent == null || _mostRecent.IsExpired())
                 {
                     return null;
                 }
 
-                return _last.Address;
+                return _mostRecent.Address;
             }
         }
 
@@ -118,14 +122,14 @@ namespace AddressCacheProject
             {
                 RemoveExpired();
 
-                while (_last == null)
+                while (_mostRecent == null)
                 {
                     Monitor.Wait(_lockObject);
                 }
 
-                var result = _last.Address;
+                var result = _mostRecent.Address;
 
-                RemoveEntry(_last.Address.ToString());
+                RemoveEntry(_mostRecent.Address.ToString());
                 return result;
             }
         }
@@ -139,9 +143,14 @@ namespace AddressCacheProject
                 return false;
             }
 
-            if (_last == removingEntry)
+            if (_mostRecent == removingEntry)
             {
-                _last = removingEntry.Next;
+                _mostRecent = _mostRecent.Next;
+            }
+
+            if (_mostOld == removingEntry)
+            {
+                _mostOld = _mostOld.Previous;
             }
 
             if (removingEntry.Previous != null)
@@ -162,13 +171,11 @@ namespace AddressCacheProject
 
         private void RemoveExpired()
         {
-            var expired = _cache.Keys
-                .Where(k => _cache[k].IsExpired())
-                .ToArray();
-
-            foreach (var key in expired)
+            var pointer = _mostOld;
+            while (pointer != null && pointer.IsExpired())
             {
-                RemoveEntry(key);
+                RemoveEntry(pointer.Address.ToString());
+                pointer = _mostOld;
             }
         }
     }
