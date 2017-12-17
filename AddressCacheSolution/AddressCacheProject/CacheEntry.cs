@@ -6,10 +6,10 @@ namespace AddressCacheProject
     public class CacheEntry
     {
         public IPAddress Address { get; }
-
-        private readonly DateTime _expirationTime;
         public CacheEntry Next { get; set; }
         public CacheEntry Previous { get; set; }
+
+        private readonly DateTime _expirationTime;
 
         public CacheEntry(IPAddress address, DateTime expirationTime, CacheEntry previous = null,
             CacheEntry next = null)
