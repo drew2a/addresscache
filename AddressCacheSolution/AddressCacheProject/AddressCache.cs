@@ -44,9 +44,14 @@ namespace AddressCacheProject
             {
                 CacheEntry cacheEntry;
                 var isEntryExists = _cache.TryGetValue(key, out cacheEntry);
-                if (isEntryExists && !cacheEntry.IsExpired())
+                if (isEntryExists)
                 {
-                    return false;
+                    if (!cacheEntry.IsExpired())
+                    {
+                        return false;
+                    }
+
+                    RemoveEntry(key);
                 }
 
                 cacheEntry = new CacheEntry(
